@@ -4,11 +4,12 @@ Surface-aware MDMix hotspot clustering for druggability analysis.
 
 Clusters MDMix hotspot points onto the receptor solvent-accessible surface using surface-graph distances, producing ranked binding pockets with pharmacophore composition, estimated ΔG, Ki, and volume.
 
-## Installation and usage
+## Installation
 
 ```bash
-pip install git+https://github.com/Tomasmunozc0/Surfcluster.git
-conda env create -f environment.yml 
+git clone https://github.com/Tomasmunozc0/Surfcluster.git
+cd Surfcluster
+conda env create -f environment.yml
 conda activate surfcluster
 ```
 
