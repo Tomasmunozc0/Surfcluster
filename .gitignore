@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+*.pkl
+*.pdb
+*.mol2
+*.xyz
+*.pml
+*.csv
+pruebas/
+.conda/
