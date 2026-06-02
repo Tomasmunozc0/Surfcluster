@@ -10,5 +10,4 @@ dependencies:
   - networkx
   - pyyaml
   - pip
-  - pip:
-    - -e .
+  
