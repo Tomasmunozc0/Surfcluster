@@ -8,7 +8,7 @@ dependencies:
   - pandas
   - scipy
   - networkx
-  - scikit-learn
+  - pyyaml
   - pip
   - pip:
-    - MDAnalysis
+    - -e .
