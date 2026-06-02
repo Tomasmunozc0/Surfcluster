@@ -1,4 +1,4 @@
-# surfcluster
+# Surfcluster
 
 Surface-aware MDMix hotspot clustering for druggability analysis.
 
