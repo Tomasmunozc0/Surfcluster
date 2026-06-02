@@ -17,7 +17,7 @@ conda activate surfcluster
 
 This walks through a full run using ULK1 as an example. You need two files from your MDMix project:
 - `ulk1_ref.pdb` — the receptor structure
-- `ulk1_hot_good.pdb` — the MDMix hotspot PDB
+- `ulk1_hotspots.pdb` — the MDMix hotspot PDB
 
 ### 1. Create a config file
 
@@ -30,7 +30,7 @@ This writes `ulk1.yml` in the current directory. Edit it to point to your files:
 ```yaml
 receptor: /path/to/ulk1_ref.pdb
 hotspots:
-  - /path/to/ulk1_hot_good.pdb
+  - /path/to/ulk1_hotspots.pdb
 name: ulk1
 outdir: .
 energy_cutoff: null
@@ -46,7 +46,7 @@ Output:
 ```
 [surfcluster] Loading receptor: ulk1_ref.pdb
   4397 atoms
-[surfcluster] Loading hotspots: [ulk1_hot_good.pdb]
+[surfcluster] Loading hotspots: [ulk1_hotspots.pdb]
   166 hotspots, energy range [-1.57, -0.84] kcal/mol
 [surfcluster] Building surface (50 pts/atom, edge=3.0 Å)...
   2840 surface points, 8574 edges (0.4s)
@@ -136,11 +136,11 @@ outdir: results/
 proteins:
   - name: ulk1
     receptor: /path/ulk1_ref.pdb
-    hotspots: [/path/ulk1_hot_good.pdb]
+    hotspots: [/path/ulk1_hotspots.pdb]
     energy_cutoff: -1.1
   - name: me1
     receptor: /path/me1_ref.pdb
-    hotspots: [/path/me1_hot_good.pdb]
+    hotspots: [/path/me1_hotspots.pdb]
     energy_cutoff: -1.0
 ```
 
