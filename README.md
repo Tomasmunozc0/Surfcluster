@@ -7,8 +7,8 @@ Clusters MDMix hotspot points onto the receptor solvent-accessible surface using
 ## Install
 
 ```bash
-conda activate surfcluster
 pip install git+https://github.com/Tomasmunozc0/Surfcluster.git
+conda activate surfcluster
 ```
 
 ## Quick start
