@@ -4,6 +4,10 @@ Surface-aware MDMix hotspot clustering for druggability analysis.
 
 Clusters MDMix hotspot points onto the receptor solvent-accessible surface using surface-graph distances, producing ranked binding pockets with pharmacophore composition, estimated ΔG, Ki, and volume.
 
+
+<img width="1774" height="887" alt="image" src="https://github.com/user-attachments/assets/c446f237-cf4b-46aa-ad40-20056f6e9b73" />
+
+
 ## Installation and enviorment setting
 
 ```bash
