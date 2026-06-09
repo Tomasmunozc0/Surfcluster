@@ -78,7 +78,7 @@ Output:
 | Column | Meaning |
 |--------|---------|
 | `#` | Pocket rank (1 = most favorable) |
-| `DG` | Sum of hotspot energies (kcal/mol). More negative = more druggable |
+| `DG` | Sum of hotspot energies (kcal/mol) |
 | `Ki(nM)` | Estimated inhibitor potency derived from ΔG |
 | `Eff` | Efficiency = DG / N (energy per hotspot) |
 | `Vol(Å³)` | Estimated pocket volume |
@@ -148,14 +148,14 @@ roi_center: [-5.5, -39.3, -15.1]   # X Y Z in Å — read from PyMOL
 roi_radius: 12.0
 ```
 
-### Option 2 — Around specific residues (you know the active site)
+### Option 2 — Around specific residues (Known/suspected site)
 
 ```yaml
 roi_residues: A:45,A:46,A:168      # chain:resnum, comma-separated
 roi_buffer: 5.0                     # Å added around the residue extent
 ```
 
-### Option 3 — Around a reference ligand (you have a co-crystal structure)
+### Option 3 — Around a reference ligand (Co-crystal structure)
 
 Extract the ligand from your co-crystal PDB as a separate file, then:
 
