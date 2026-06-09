@@ -246,6 +246,41 @@ def filter_roi_residues(
     return coords[mask], vdw_radii[mask], center, radius
 
 
+def filter_roi_ligand(
+    coords: np.ndarray,
+    vdw_radii: np.ndarray,
+    ligand_path: str,
+    buffer: float = 5.0,
+) -> tuple:
+    """
+    Filter receptor atoms to those within buffer of a reference ligand.
+    Center is the geometric center of the ligand; radius is the max distance
+    from center to any ligand atom plus buffer.
+    Returns (coords, vdw_radii, center, radius) — same signature as
+    filter_roi_residues so the same sphere can be applied to hotspots.
+    """
+    lig_coords = []
+
+    with open(ligand_path) as f:
+        for line in f:
+            if not line.startswith(('ATOM', 'HETATM')):
+                continue
+            try:
+                lig_coords.append([float(line[30:38]), float(line[38:46]), float(line[46:54])])
+            except ValueError:
+                continue
+
+    if not lig_coords:
+        raise ValueError(f"No ATOM/HETATM records found in ligand file: {ligand_path}")
+
+    lig_arr = np.array(lig_coords)
+    center  = np.mean(lig_arr, axis=0)
+    radius  = np.max(np.linalg.norm(lig_arr - center, axis=1)) + buffer
+
+    mask = np.linalg.norm(coords - center, axis=1) <= radius
+    return coords[mask], vdw_radii[mask], center, radius
+
+
 # --- DM cleaning -------------------------------------------------------------
 
 def clean_surface_dm(surface_dm: np.ndarray) -> tuple:

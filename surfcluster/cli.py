@@ -17,7 +17,7 @@ from surfcluster.io import (
 from surfcluster.surface import (
     build_surface_pipeline,
     snap_to_surface, compute_surface_dm, clean_surface_dm,
-    filter_roi_sphere, filter_roi_residues,
+    filter_roi_sphere, filter_roi_residues, filter_roi_ligand,
 )
 from surfcluster.clustering import cluster_hotspots, force_merge_pockets
 from surfcluster.descriptors import annotate_pockets
@@ -68,10 +68,12 @@ YAML format (single protein):
 
   # region of interest (optional — leave null to use full protein)
   # Tip: change name above (e.g. myprotein_roi) to avoid overwriting full-protein results
-  roi_center: null            # [X, Y, Z] sphere center in Å
-  roi_radius: 15.0            # sphere radius in Å
+  # Use ONE of the three options below, leave the others null
+  roi_center: null            # [X, Y, Z] sphere center in Å — define manually in PyMOL
   roi_residues: null          # e.g. A:45,A:46 — focus around specific residues
-  roi_buffer: 5.0             # buffer around roi_residues in Å
+  roi_ligand: null            # path to ligand PDB — centers ROI on ligand position
+  roi_radius: 15.0            # sphere radius for roi_center (Å)
+  roi_buffer: 5.0             # buffer added around roi_residues or roi_ligand (Å)
 
 YAML format (batch):
   outdir: results/            # global default for all proteins
@@ -153,10 +155,13 @@ def build_parser():
                      help='Restrict to sphere of --roi-radius around X Y Z.')
     roi.add_argument('--roi-residues', metavar='CHAIN:RESNUM,...',
                      help='Restrict around residues. Format: A:45,A:46,B:100')
+    roi.add_argument('--roi-ligand', metavar='PDB',
+                     help='Restrict around a reference ligand PDB. '
+                          'Sphere center = ligand centroid, radius = ligand extent + --roi-buffer.')
     roi_g.add_argument('--roi-radius', type=float, default=None,
                        help='Sphere radius for --roi-center. (default: 15.0 Å)')
     roi_g.add_argument('--roi-buffer', type=float, default=None,
-                       help='Buffer around --roi-residues. (default: 5.0 Å)')
+                       help='Buffer around --roi-residues or --roi-ligand. (default: 5.0 Å)')
 
     # --- Surface ---
     surf = p.add_argument_group('surface generation')
@@ -200,6 +205,7 @@ _DEFAULTS = dict(
     force_merge=None,
     roi_center=None,
     roi_residues=None,
+    roi_ligand=None,
     roi_radius=15.0,
     roi_buffer=5.0,
     probe=1.2,
@@ -218,7 +224,7 @@ def _load_yaml(path: str) -> dict:
         return yaml.safe_load(f)
 
 
-_PATH_KEYS = {'receptor', 'hotspots', 'outdir', 'mol2', 'cache'}
+_PATH_KEYS = {'receptor', 'hotspots', 'outdir', 'mol2', 'cache', 'roi_ligand'}
 
 
 def _yaml_to_opts(yaml_data: dict, config_dir: Path, cli_opts) -> argparse.Namespace:
@@ -272,9 +278,10 @@ def _cache_meta(opts, hotspot_list: list) -> dict:
         'n_sphere':     int(opts.n_sphere),
         'edge_dist':    float(opts.edge_dist),
         'roi_center':   tuple(map(float, opts.roi_center)) if opts.roi_center else None,
-        'roi_radius':   float(opts.roi_radius) if opts.roi_center or opts.roi_residues else None,
+        'roi_radius':   float(opts.roi_radius) if opts.roi_center else None,
         'roi_residues': opts.roi_residues,
-        'roi_buffer':   float(opts.roi_buffer) if opts.roi_residues else None,
+        'roi_ligand':   _file_meta(opts.roi_ligand) if opts.roi_ligand else None,
+        'roi_buffer':   float(opts.roi_buffer) if opts.roi_residues or opts.roi_ligand else None,
     }
 
 
@@ -314,8 +321,10 @@ def run_single(opts: argparse.Namespace):
     print(f"  {len(receptor_coords)} atoms")
 
     # --- ROI filtering ---
-    if opts.roi_center and opts.roi_residues:
-        print("  WARNING: both roi_center and roi_residues specified — using roi_center.")
+    n_roi_set = sum(bool(x) for x in [opts.roi_center, opts.roi_residues, opts.roi_ligand])
+    if n_roi_set > 1:
+        active = 'roi_center' if opts.roi_center else ('roi_residues' if opts.roi_residues else 'roi_ligand')
+        print(f"  WARNING: multiple ROI options specified — using {active}.")
 
     roi_center = roi_radius = None
     if opts.roi_center:
@@ -330,6 +339,12 @@ def run_single(opts: argparse.Namespace):
         print(f"  ROI residues: {res_list}, buffer={opts.roi_buffer} Å")
         receptor_coords, vdw_radii, roi_center, roi_radius = filter_roi_residues(
             receptor_coords, vdw_radii, opts.receptor, res_list, opts.roi_buffer)
+        print(f"  After ROI filter: {len(receptor_coords)} atoms")
+    elif opts.roi_ligand:
+        print(f"  ROI ligand: {opts.roi_ligand}, buffer={opts.roi_buffer} Å")
+        receptor_coords, vdw_radii, roi_center, roi_radius = filter_roi_ligand(
+            receptor_coords, vdw_radii, opts.roi_ligand, opts.roi_buffer)
+        print(f"  ROI sphere: center={np.round(roi_center, 2)}, radius={roi_radius:.2f} Å")
         print(f"  After ROI filter: {len(receptor_coords)} atoms")
 
     # --- Load hotspots ---
@@ -580,10 +595,12 @@ cache: null               # path to save/load surface DM (speeds up reruns, e.g.
 
 # Region of interest (optional — leave null to use full protein)
 # Tip: change name above (e.g. myprotein_roi) to avoid overwriting full-protein results
-roi_center: null          # [X, Y, Z] sphere center in Å
-roi_radius: 15.0          # sphere radius in Å
+# Use ONE of the three options below, leave the others null
+roi_center: null          # [X, Y, Z] sphere center in Å — define manually in PyMOL
 roi_residues: null        # e.g. A:45,A:46 — focus around specific residues
-roi_buffer: 5.0           # buffer around roi_residues in Å
+roi_ligand: null          # path to ligand PDB — centers ROI on ligand position
+roi_radius: 15.0          # sphere radius for roi_center (Å)
+roi_buffer: 5.0           # buffer added around roi_residues or roi_ligand (Å)
 """
 
 
