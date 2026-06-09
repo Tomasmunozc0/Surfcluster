@@ -13,3 +13,4 @@ build/
 *.csv
 pruebas/
 .conda/
+test_smoke.py
