@@ -332,6 +332,7 @@ def write_pymol_session(pockets: list, receptor_path: str, path: str, name: str)
               'orange', 'violet', 'salmon', 'lime']
 
     lines = [
+        f"cd {pml_dir}",
         f"load {receptor_rel}, receptor",
         f"load {clusts_rel}, pockets",
         "hide everything",
