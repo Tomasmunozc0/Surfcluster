@@ -1,4 +1,4 @@
-__version__ = '0.1.0'
+__version__ = '0.1.5'
 
 from .io import Pocket, Hotspots, read_receptor, read_hotspots
 from .clustering import cluster_hotspots, force_merge_pockets
