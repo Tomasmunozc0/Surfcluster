@@ -55,6 +55,7 @@ YAML format (single protein):
     - hotspot.pdb
   name: myprotein
   outdir: .                   # output directory (. = same dir as YAML)
+  mol2: null                  # receptor mol2 for SYBYL VdW radii (optional, more accurate)
 
   # clustering (all optional — defaults shown)
   energy_cutoff: null         # auto-selected (keeps top 200 hotspots) if not set
@@ -468,7 +469,7 @@ def run_single(opts: argparse.Namespace):
 
     # --- Print summary -------------------------------------------------------
     print(f"\n  Found {len(pockets)} pockets:")
-    print(f"  {'#':>3}  {'DG':>8}  {'Ki(nM)':>12}  {'Eff':>6}  {'Vol(Å³)':>8}  {'N':>4}  HYD POL DON ACC")
+    print(f"  {'#':>3}  {'DG':>8}  {'Ki(nM)*':>12}  {'Eff':>6}  {'Vol(Å³)':>8}  {'N':>4}  HYD POL DON ACC")
     flagged = []
     for i, p in enumerate(pockets):
         ki_str = f"{p.ki:.3f}" if p.ki < 1e6 else ">1e6"
@@ -478,6 +479,9 @@ def run_single(opts: argparse.Namespace):
         print(f"  {i+1:>3}  {p.dg:>8.2f}  {ki_str:>12}  {p.efficiency:>6.3f}  "
               f"{p.volume:>8.1f}  {len(p.coords):>4}  "
               f"{p.hyd_count:>3} {p.pol_count:>3} {p.don_count:>3} {p.acc_count:>3}{warn}")
+
+    print("  * Ki estimated via ΔG = RT·ln(Ki). ΔG is a sum of MDMix probe energies —")
+    print("    use Ki as a relative rank between pockets, not a quantitative prediction.")
 
     # --- Tuning block --------------------------------------------------------
     print()
@@ -581,6 +585,7 @@ hotspots:
   - hotspot.pdb
 name: myprotein
 outdir: .
+mol2: null                # receptor mol2 for SYBYL VdW radii (more accurate surface, optional)
 
 # Clustering parameters (defaults shown)
 energy_cutoff: null       # auto-selected (keeps top 200) if not set
